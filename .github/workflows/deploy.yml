@@ -1,0 +1,39 @@
+name: Deploy to IIS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Publish
+        run: dotnet publish -c Release -o C:\actions-runner\site
+
+      - name: Stop IIS site and pool
+        run: |
+          Import-Module WebAdministration
+          Stop-WebAppPool -Name "GitActionsDeploy"
+          Stop-WebSite -Name "SampleDeployIIS"  
+
+      - name: Deploy
+        run: |
+          Remove-Item -Recurse -Force C:\inetpub\wwwroot\SampleDeployIISApi\*
+          Copy-Item -Path C:\actions-runner\site\* -Destination C:\inetpub\wwwroot\SampleDeployIISApi -Recurse 
+
+      - name: Start IIS site and pool
+        run: |
+          Import-Module WebAdministration
+          Start-WebAppPool -Name "GitActionsDeploy"
+          Start-WebSite -Name "SampleDeployIIS"  
