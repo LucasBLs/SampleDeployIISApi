@@ -1,0 +1,6 @@
+@SampleDeployIISApi_HostAddress = http://localhost:5290
+
+GET {{SampleDeployIISApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
